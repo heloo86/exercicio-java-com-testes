@@ -1,16 +1,24 @@
 package org.example.service;
 
 import org.example.model.Produto;
+import org.example.repository.ProdutoRepository;
+import org.example.repository.ProdutoRepositoryImpl;
+import org.example.util.ConexaoBanco;
 
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 
 public class ProdutoServiceImpl implements ProdutoService{
 
+    private final ProdutoRepositoryImpl repository = new ProdutoRepositoryImpl();
+
     @Override
     public Produto cadastrarProduto(Produto produto) throws SQLException {
-        return null;
+        if (produto.getPreco()< 0) { throw new IllegalArgumentException("Preço deve ser positivo."); }
+        repository.save(produto);
+        return produto;
     }
+
 
     @Override
     public List<Produto> listarProdutos() throws SQLException {
@@ -28,7 +36,14 @@ public class ProdutoServiceImpl implements ProdutoService{
     }
 
     @Override
-    public boolean excluirProduto(int id) throws SQLException {
-        return false;
+    public boolean excluirProduto(int id) {
+        try {
+                repository.deleteById(id);
+                return true;
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+            return false;
+        }
+
     }
 }
