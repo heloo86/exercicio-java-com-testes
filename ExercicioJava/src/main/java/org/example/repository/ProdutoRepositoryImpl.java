@@ -4,6 +4,7 @@ import org.example.model.Produto;
 import org.example.util.ConexaoBanco;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,41 +39,81 @@ public class ProdutoRepositoryImpl implements ProdutoRepository{
 
     @Override
     public List<Produto> findAll() throws SQLException {
-        return List.of();
+        String sql = "SELECT id, nome, preco, quantidade, categoria FROM produto";
+        List<Produto>produtos = new ArrayList<>();
+
+        try (Connection connection = ConexaoBanco.conectar();
+        PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        ResultSet resultSet = statement.executeQuery() ){
+
+;            while (resultSet.next()){
+                Produto produto = new Produto();
+
+                produto.setId(resultSet.getInt("id"));
+                produto.setCategoria(resultSet.getNString("categoria"));
+                produto.setNome(resultSet.getNString("nome"));
+                produto.setQuantidade(resultSet.getInt("quantidade"));
+                produto.setPreco(resultSet.getDouble("preco"));
+
+                produtos.add(produto);
+
+             }
+        }
+        return produtos;
     }
 
     @Override
-    public Optional<Produto> findById(int id) throws SQLException {
+    public Produto findById(int id) throws SQLException {
 
         String sql = "SELECT * FROM produto WHERE id = ?";
 
         try (Connection connection = ConexaoBanco.conectar();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.getResultSet()){
+             PreparedStatement statement = connection.prepareStatement(sql)){
 
             Produto produto = new Produto();
 
             statement.setInt(1, id);
             statement.executeQuery();
 
-            produto.setId(id);
-            produto.setCategoria(resultSet.getNString("categoria"));
-            produto.setNome(resultSet.getNString("nome"));
-            produto.setQuantidade(resultSet.getInt("quantidade"));
-            produto.setPreco(resultSet.getDouble("preco"));
+            ResultSet resultSet = statement.getResultSet();
 
-            return Optional.of(produto);
+            if (resultSet.next()){
+                produto.setId(id);
+                produto.setCategoria(resultSet.getNString("categoria"));
+                produto.setNome(resultSet.getNString("nome"));
+                produto.setQuantidade(resultSet.getInt("quantidade"));
+                produto.setPreco(resultSet.getDouble("preco"));
+
+                return produto;
+            }
+
         }
-    }
 
-    @Override
-    public Produto update(Produto produto) throws SQLException {
         return null;
     }
 
     @Override
+    public Produto update(Produto produto) throws SQLException {
+        String sql = "UPDATE produto SET nome = ?, quantidade = ?, preco = ?, categoria = ? WHERE id = ?";
+
+        try(Connection connection = ConexaoBanco.conectar();
+            PreparedStatement statement = connection.prepareStatement(sql)){
+
+            statement.setString(1, produto.getNome());
+            statement.setInt(2, produto.getQuantidade());
+            statement.setDouble(3, produto.getPreco());
+            statement.setString(4, produto.getCategoria());
+            statement.setInt(5, produto.getId());
+
+            statement.executeUpdate();
+        }
+
+        return produto;
+    }
+
+    @Override
     public void deleteById(int id) throws SQLException {
-        String sql = "DELETE FROM  produto where id = ?";
+        String sql = "DELETE FROM produto where id = ?";
 
         try (Connection connection = ConexaoBanco.conectar();
             PreparedStatement statement = connection.prepareStatement(sql)){

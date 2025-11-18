@@ -11,7 +11,7 @@ public interface ProdutoRepository {
 
     List<Produto> findAll() throws SQLException;
 
-    Optional<Produto> findById(int id) throws SQLException;
+    Produto findById(int id) throws SQLException;
 
     Produto update(Produto produto) throws SQLException;
 

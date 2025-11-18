@@ -7,6 +7,7 @@ import org.example.util.ConexaoBanco;
 
 import java.sql.*;
 import java.util.List;
+import java.util.Optional;
 
 public class ProdutoServiceImpl implements ProdutoService{
 
@@ -22,24 +23,29 @@ public class ProdutoServiceImpl implements ProdutoService{
 
     @Override
     public List<Produto> listarProdutos() throws SQLException {
-        return List.of();
+        return repository.findAll();
     }
 
     @Override
     public Produto buscarPorId(int id) throws SQLException {
-        return null;
+        return repository.findById(id);
     }
 
     @Override
     public Produto atualizarProduto(Produto produto, int id) throws SQLException {
-        return null;
+        produto.setId(id);
+        return repository.update(produto);
     }
 
     @Override
     public boolean excluirProduto(int id) {
+
         try {
-                repository.deleteById(id);
-                return true;
+            if (repository.findById(id) == null){
+                return false;
+            }
+            repository.deleteById(id);
+            return true;
         }catch (SQLException e){
             System.out.println(e.getMessage());
             return false;
